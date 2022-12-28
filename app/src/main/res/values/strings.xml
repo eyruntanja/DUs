@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">DoubleUnders</string>
     <string name="connect">connect</string>
+    <string name="no_device">No device</string>
 </resources>
