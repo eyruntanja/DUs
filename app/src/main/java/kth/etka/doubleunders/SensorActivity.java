@@ -2,9 +2,6 @@ package kth.etka.doubleunders;
 
 import static androidx.core.content.PackageManagerCompat.LOG_TAG;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -12,12 +9,18 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +29,9 @@ public class SensorActivity extends AppCompatActivity {
 
     private BluetoothDevice currentDevice = null;
     private BluetoothGatt bluetoothGatt = null;
+
+    private Context context;
+    private CameraPreview mPreview;
 
     private final String IMU_COMMAND = "Meas/IMU6/13"; // see documentation
     private final byte MOVESENSE_REQUEST = 1, MOVESENSE_RESPONSE = 2, REQUEST_ID = 99;
@@ -57,6 +63,14 @@ public class SensorActivity extends AppCompatActivity {
 
         deviceNameView = findViewById(R.id.device_name);
 
+        // Create an instance of Camera
+        Camera mCamera = getCameraInstance();
+
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.container);
+        preview.addView(mPreview);
+
         currentDevice = intent.getParcelableExtra(MainActivity.SELECTED_DEVICE);
         if (currentDevice == null) {
             deviceNameView.setText("No device");
@@ -77,6 +91,19 @@ public class SensorActivity extends AppCompatActivity {
         }
         return ascii;
     }
+
+    /** A safe way to get an instance of the Camera object. */
+    public static Camera getCameraInstance(){
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        }
+        catch (Exception e){
+            // Camera is not available (in use or does not exist)
+        }
+        return c; // returns null if camera is unavailable
+    }
+
     @SuppressLint("NewApi")
     private final BluetoothGattCallback btGattCallback = new BluetoothGattCallback() {
 
@@ -96,6 +123,7 @@ public class SensorActivity extends AppCompatActivity {
                 // Close connection and display info in ui
                 bluetoothGatt = null;
                 mHandler.post(new Runnable() {
+                    @SuppressLint("SetTextI18n")
                     public void run() {
                         deviceNameView.setText("Disconnected");
                     }
@@ -123,7 +151,6 @@ public class SensorActivity extends AppCompatActivity {
                     for (BluetoothGattCharacteristic chara : characteristics) {
                         Log.i(LOG_TAG, chara.getUuid().toString());
                     }
-
 
                     BluetoothGattCharacteristic commandCharAcc =
                             movesenseService.getCharacteristic(

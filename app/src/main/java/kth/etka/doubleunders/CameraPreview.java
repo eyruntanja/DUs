@@ -3,8 +3,7 @@ package kth.etka.doubleunders;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
-import android.hardware.*;
-import android.graphics.Camera;
+import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -28,7 +27,8 @@ import java.io.IOException;
             mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
 
-        public void surfaceCreated(SurfaceHolder holder) {
+
+    public void surfaceCreated(SurfaceHolder holder) {
             // The Surface has been created, now tell the camera where to draw the preview.
             try {
                 mCamera.setPreviewDisplay(holder);

@@ -1,11 +1,6 @@
 package kth.etka.doubleunders;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import static androidx.core.content.PackageManagerCompat.LOG_TAG;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -17,16 +12,22 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.*;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,21 +53,21 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Context context;
-    private Camera mCamera;
-    private CameraPreview mPreview;
+    /*private Camera mCamera;
+    private CameraPreview mPreview;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
-
         // Create our Preview view and set it as the content of our activity.
+        /*
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+
+         */
 
 
         //*** BLUETOOTH CONNECTION ***//
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button startScanButton = findViewById(R.id.search_devices);
         startScanButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
                 mDeviceList.clear();
@@ -98,17 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
+
 
 
     //**** BLUETOOTH ****// - FROM IMU APP
@@ -125,7 +117,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         // stop scanning
-        scanForDevices(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            scanForDevices(false);
+        }
         mDeviceList.clear();
         mBtDeviceAdapter.notifyDataSetChanged();
     }
@@ -167,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void scanForDevices(final boolean enable) {
         final BluetoothLeScanner scanner =
                 mBluetoothAdapter.getBluetoothLeScanner();
@@ -200,7 +195,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("NewApi")
     private ScanCallback mScanCallback = new ScanCallback() {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
@@ -209,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
             final String name = device.getName();
 
             mHandler.post(new Runnable() {
+                @SuppressLint("RestrictedApi")
                 public void run() {
                     if (name != null
                             && name.contains(MOVESENSE)
@@ -224,12 +222,14 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        @SuppressLint("RestrictedApi")
         @Override
         public void onBatchScanResults(List<ScanResult> results) {
             super.onBatchScanResults(results);
             Log.i(LOG_TAG, "onBatchScanResult");
         }
 
+        @SuppressLint("RestrictedApi")
         @Override
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);

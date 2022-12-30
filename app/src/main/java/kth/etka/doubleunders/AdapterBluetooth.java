@@ -57,7 +57,7 @@ public class AdapterBluetooth extends RecyclerView.Adapter<AdapterBluetooth.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // create a new item view
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.bluetooth_list_item, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.bluetooth_list_layout, parent, false);
         final ViewHolder vh = new ViewHolder(itemView, mOnItemSelectedCallback);
         vh.sensorIdView = itemView.findViewById(R.id.sensor_id);
         //vh.deviceInfoView = itemView.findViewById(R.id.device_info);
